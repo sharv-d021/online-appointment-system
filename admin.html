@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AppointEase — Admin Panel</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f3f4f6;
+}
+
+.layout{ display:flex; height:100vh; }
+
+/* ---------- SIDEBAR ---------- */
+.sidebar{
+  width:240px;
+  background:#111827;
+  color:white;
+  padding:20px;
+}
+
+.sidebar h2{ margin-top:0; color:#c7d2fe; }
+
+.menu-item{
+  padding:10px;
+  margin-top:10px;
+  border-radius:8px;
+  cursor:pointer;
+  background:#1f2937;
+}
+
+.menu-item:hover{ background:#312e81; }
+
+/* ---------- MAIN PANEL ---------- */
+.main{ flex:1; padding:25px; overflow:auto; }
+
+/* ---------- STATS CARDS ---------- */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.card{
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+
+.card h3{ margin:0; color:#4f46e5; }
+
+/* ---------- TABS ---------- */
+.tabs{
+  display:flex;
+  gap:10px;
+  margin:20px 0;
+}
+
+.tab{
+  padding:10px 15px;
+  border-radius:10px;
+  cursor:pointer;
+  background:white;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  font-weight:bold;
+}
+
+.tab.active{
+  background:#4f46e5;
+  color:white;
+}
+
+/* ---------- TABLE ---------- */
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 10px rgba(0,0,0,.08);
+}
+
+th,td{ padding:10px; border-bottom:1px solid #eee; font-size:14px; }
+th{ background:#eef2ff; }
+
+/* ---------- STATUS ---------- */
+.status{
+  padding:6px 10px;
+  border-radius:8px;
+  font-weight:bold;
+  font-size:12px;
+}
+
+.pending{ background:#fef3c7; color:#92400e; }
+.approved{ background:#dcfce7; color:#14532d; }
+.rejected{ background:#fee2e2; color:#7f1d1d; }
+
+/* ---------- BUTTONS ---------- */
+button{
+  padding:6px 10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  margin-right:5px;
+}
+
+.approve{ background:#22c55e; color:white; }
+.reject{ background:#ef4444; color:white; }
+.view{ background:#3b82f6; color:white; }
+.email{ background:#9333ea; color:white; }
+
+/* ---------- POPUP ---------- */
+.overlay{
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,.5);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+
+.popup{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  width:350px;
+}
+
+.popup h3{ margin-top:0; }
+
+.close{
+  background:#111827;
+  color:white;
+}
+</style>
+</head>
+
+<body>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>AppointEase</h2>
+  <div class="menu-item">Dashboard</div>
+  <div class="menu-item">Bookings</div>
+  <div class="menu-item">Users</div>
+  <div class="menu-item" onclick="logout()">Logout</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<h2>Admin Dashboard</h2>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="card">
+    <h3 id="totalCount">0</h3>
+    <p>Total Bookings</p>
+  </div>
+
+  <div class="card">
+    <h3 id="pendingCount">0</h3>
+    <p>Pending</p>
+  </div>
+
+  <div class="card">
+    <h3 id="approvedCount">0</h3>
+    <p>Approved</p>
+  </div>
+
+  <div class="card">
+    <h3 id="rejectedCount">0</h3>
+    <p>Rejected</p>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="filterCategory('All', this)">All</div>
+  <div class="tab" onclick="filterCategory('Healthcare', this)">Healthcare</div>
+  <div class="tab" onclick="filterCategory('Salon', this)">Salon</div>
+  <div class="tab" onclick="filterCategory('College', this)">College</div>
+  <div class="tab" onclick="filterCategory('Professional', this)">Professional</div>
+</div>
+
+<div id="tableContainer"></div>
+
+</div>
+</div>
+
+<!-- USER PROFILE POPUP -->
+<div class="overlay" id="overlay">
+  <div class="popup">
+    <h3>User Profile</h3>
+    <p><b>Name:</b> <span id="pName"></span></p>
+    <p><b>Email:</b> <span id="pEmail"></span></p>
+    <p><b>Phone:</b> <span id="pPhone"></span></p>
+    <button class="close" onclick="closePopup()">Close</button>
+  </div>
+</div>
+
+<script>
+let bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+let users = JSON.parse(localStorage.getItem("users") || "[]"); // all registered users
+
+function updateStats(){
+  document.getElementById("totalCount").innerText = bookings.length;
+
+  const pending = bookings.filter(b=>b.status==="Pending").length;
+  const approved = bookings.filter(b=>b.status==="Approved").length;
+  const rejected = bookings.filter(b=>b.status==="Rejected").length;
+
+  document.getElementById("pendingCount").innerText = pending;
+  document.getElementById("approvedCount").innerText = approved;
+  document.getElementById("rejectedCount").innerText = rejected;
+}
+
+function renderTable(filter="All"){
+  const container = document.getElementById("tableContainer");
+
+  let data = filter==="All"
+    ? bookings
+    : bookings.filter(b=>b.category===filter);
+
+  if(data.length===0){
+    container.innerHTML =
+      `<div class="card">No bookings in ${filter}</div>`;
+    updateStats();
+    return;
+  }
+
+  let html = `
+  <table>
+    <tr>
+      <th>Category</th>
+      <th>Service</th>
+      <th>City</th>
+      <th>Place</th>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  `;
+
+  data.forEach((b)=>{
+    // find user by email if missing in booking
+    const user =
+      users.find(u => u.email === b.userEmail) || {};
+
+    const name  = b.userName  || user.name  || "Unknown";
+    const email = b.userEmail || user.email || "Not provided";
+    const phone = b.userPhone || user.phone || "Not provided";
+
+    const realIndex = bookings.indexOf(b);
+
+    html += `
+    <tr>
+      <td>${b.category}</td>
+      <td>${b.service}</td>
+      <td>${b.city}</td>
+      <td>${b.place}</td>
+      <td>${b.date}</td>
+      <td>${b.time}</td>
+      <td>
+        <span class="status ${b.status.toLowerCase()}">
+          ${b.status}
+        </span>
+      </td>
+      <td>
+  ${b.status === "Pending"
+    ? `
+      <button class="approve" onclick="approve(${realIndex})">Approve</button>
+      <button class="reject" onclick="reject(${realIndex})">Reject</button>
+     `
+     : `<span style="font-size:12px;color:#555;">Locked</span>`
+     }
+      <button class="view" onclick="viewProfile()">View</button>
+      </td>
+
+
+    </tr>
+    `;
+  });
+
+  html += `</table>`;
+  container.innerHTML = html;
+  updateStats();
+}
+
+function filterCategory(cat, el){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  renderTable(cat);
+}
+
+function approve(i){
+  if(bookings[i].status !== "Pending"){
+    alert("This decision is locked — you cannot change it again.");
+    return;
+  }
+
+  bookings[i].status = "Approved";
+  localStorage.setItem("bookings", JSON.stringify(bookings));
+  renderTable(getActiveTab());
+}
+
+
+function reject(i){
+  if(bookings[i].status !== "Pending"){
+    alert("This decision is locked — you cannot change it again.");
+    return;
+  }
+
+  bookings[i].status = "Rejected";
+  localStorage.setItem("bookings", JSON.stringify(bookings));
+  renderTable(getActiveTab());
+}
+
+
+function getActiveTab(){
+  return document.querySelector(".tab.active").innerText;
+}
+
+/* ---------- VIEW PROFILE POPUP ---------- */
+function viewProfile(){
+  const savedUser = localStorage.getItem("user");
+
+  if(!savedUser){
+    alert("No logged-in user profile found!");
+    return;
+  }
+
+  const user = JSON.parse(savedUser);
+
+  document.getElementById("pName").innerText = user.name || "Not available";
+  document.getElementById("pEmail").innerText = user.email || "Not available";
+  document.getElementById("pPhone").innerText = user.phone || "Not available";
+
+  document.getElementById("overlay").style.display = "flex";
+}
+function closePopup(){
+  document.getElementById("overlay").style.display = "none";
+}
+
+
+/* ---------- EMAIL BUTTON ---------- */
+function emailUser(email){
+  window.location.href = "mailto:" + email;
+}
+
+/* ---------- LOGOUT ---------- */
+function logout(){
+  const confirmLogout = confirm(
+    "You will be logged out of AppointEase. Continue?"
+  );
+  window.location.href="auth/login.html";
+}
+
+/* ---------- INIT ---------- */
+renderTable();
+
+</script>
+</body>
+</html>

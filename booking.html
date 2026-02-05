@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AppointEase — Book Appointment</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:#f3f4f6;
+    }
+
+    .container{
+      max-width:800px;
+      margin:30px auto;
+      padding:20px;
+    }
+
+    .categories{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:15px;
+      margin-bottom:20px;
+    }
+
+    .cat-card{
+      background:white;
+      padding:15px;
+      border-radius:12px;
+      text-align:center;
+      cursor:pointer;
+      box-shadow:0 4px 8px rgba(0,0,0,.08);
+    }
+
+    .selected{
+      border:2px solid #4f46e5;
+      background:#eef2ff;
+    }
+
+    .form-card{
+      background:white;
+      padding:25px;
+      border-radius:12px;
+      box-shadow:0 4px 10px rgba(0,0,0,.08);
+    }
+
+    label{
+      display:block;
+      margin-top:12px;
+      font-weight:bold;
+    }
+
+    select, input{
+      width:100%;
+      padding:8px;
+      margin-top:5px;
+      border-radius:8px;
+      border:1px solid #ddd;
+    }
+
+    .row{
+      display:flex;
+      gap:15px;
+    }
+
+    button{
+      margin-top:15px;
+      padding:10px 16px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:bold;
+    }
+
+    .primary{ background:#4f46e5; color:white; }
+    .back{ background:#111827; color:white; }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Book an Appointment</h2>
+
+<div class="categories">
+  <div class="cat-card" onclick="chooseCat('Healthcare', this)">🏥 Healthcare</div>
+  <div class="cat-card" onclick="chooseCat('Salon', this)">💇 Salon</div>
+  <div class="cat-card" onclick="chooseCat('College', this)">🏫 College</div>
+  <div class="cat-card" onclick="chooseCat('Professional', this)">💼 Professional</div>
+</div>
+
+<div class="form-card">
+
+<label>Service</label>
+<select id="service" onchange="serviceChanged()">
+  <option value="">Select category first...</option>
+</select>
+
+<label>City</label>
+<input type="text" id="city" placeholder="e.g. Pune, Mumbai, Nashik">
+
+<label>Place / Location</label>
+<input type="text" id="place" placeholder="e.g. Lakme Salon Viman Nagar">
+
+<div class="row">
+  <div>
+    <label>Date</label>
+    <input type="date" id="date">
+  </div>
+
+  <div>
+    <label>Time</label>
+    <input type="time" id="time">
+  </div>
+</div>
+
+<label>Reason</label>
+<input type="text" id="reason" placeholder="Short note...">
+
+<button class="primary" onclick="bookAppointment()">Confirm Booking</button>
+<button class="back" onclick="goBack()">Back to Dashboard</button>
+
+</div>
+</div>
+
+<script>
+let selectedCategory = "";
+let selectedService = "";
+
+const services = {
+  "Healthcare": ["Dentist","General Doctor","Physiotherapy","Lab Test"],
+  "Salon": ["Haircut","Facial","Spa","Makeup"],
+  "College": ["Admission Query","Fee Discussion","Faculty Meeting","Documents"],
+  "Professional": ["Lawyer","Counselor","Financial Advisor","Career Coach"]
+};
+
+function chooseCat(cat, el){
+  selectedCategory = cat;
+
+  document.querySelectorAll(".cat-card").forEach(c=>c.classList.remove("selected"));
+  el.classList.add("selected");
+
+  const s = document.getElementById("service");
+  s.innerHTML = `<option value="">Select ${cat} service...</option>`;
+
+  services[cat].forEach(x=>{
+    s.innerHTML += `<option value="${x}">${x}</option>`;
+  });
+}
+
+function serviceChanged(){
+  selectedService = document.getElementById("service").value;
+}
+
+function bookAppointment(){
+  const city = document.getElementById("city").value;
+  const place = document.getElementById("place").value;
+  const date = document.getElementById("date").value;
+  const time = document.getElementById("time").value;
+  const reason = document.getElementById("reason").value;
+
+  if(!selectedCategory || !selectedService || !city || !place || !date || !time){
+    alert("Please fill all required fields.");
+    return;
+  }
+
+  const savedUser = localStorage.getItem("user");
+  if(!savedUser){
+    alert("User not logged in!");
+    return;
+  }
+
+  const user = JSON.parse(savedUser);
+
+  let bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+
+  bookings.push({
+    // ---- USER INFO (NEW) ----
+    userName: user.name,
+    userEmail: user.email,
+    userPhone: user.phone,
+
+    // ---- APPOINTMENT INFO ----
+    category: selectedCategory,
+    service: selectedService,
+    city,
+    place,
+    date,
+    time,
+    reason,
+    status:"Pending"
+  });
+
+  localStorage.setItem("bookings", JSON.stringify(bookings));
+  window.location.href = "user-dashboard.html";
+}
+
+
+function goBack(){
+  window.location.href = "user-dashboard.html";
+}
+</script>
+
+</body>
+</html>

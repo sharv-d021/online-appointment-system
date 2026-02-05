@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AppointEase</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f3f4f6;
+}
+
+.nav{
+  display:flex;
+  justify-content:space-between;
+  padding:15px 60px;
+  background:white;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+
+.logo{
+  font-size:22px;
+  font-weight:bold;
+  color:#4f46e5;
+}
+
+.nav-links a{
+  margin-left:20px;
+  text-decoration:none;
+  color:#111827;
+  font-weight:bold;
+}
+
+/* HERO SECTION */
+.hero{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  padding:80px 60px;
+  background:white;
+  gap:40px;
+}
+
+.hero-text h1{
+  font-size:48px;
+  color:#111827;
+  line-height:1.2;
+}
+
+.hero-text p{
+  color:#374151;
+  font-size:18px;
+  margin:20px 0;
+}
+
+.hero-btn{
+  padding:12px 20px;
+  border:none;
+  border-radius:10px;
+  background:#4f46e5;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* FEATURES */
+.features{
+  padding:60px;
+  background:#eef2ff;
+}
+
+.features h2{
+  text-align:center;
+  margin-bottom:30px;
+}
+
+.feature-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 4px 8px rgba(0,0,0,.08);
+}
+
+/* CATEGORIES */
+.categories{
+  padding:60px;
+  background:white;
+}
+
+.cat-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:20px;
+}
+
+.cat{
+  background:#eef2ff;
+  padding:20px;
+  border-radius:12px;
+  text-align:center;
+  font-weight:bold;
+}
+
+/* HOW IT WORKS */
+.steps{
+  padding:60px;
+  background:#f3f4f6;
+}
+
+.steps-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:20px;
+}
+
+.step{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 4px 8px rgba(0,0,0,.08);
+}
+
+/* FOOTER */
+.footer{
+  background:#111827;
+  color:white;
+  text-align:center;
+  padding:20px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="nav">
+  <div class="logo">AppointEase</div>
+  <div class="nav-links">
+    <a href="auth/login.html">Login</a>
+    <a href="auth/signup.html">Signup</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-text">
+    <h1>Book Appointments. <br> Hassle-Free.</h1>
+    <p>
+      AppointEase lets you schedule appointments for doctors, salons, colleges, 
+      and professional services in one unified platform — fast, simple, and secure.
+    </p>
+    <button class="hero-btn" onclick="window.location.href='auth/login.html'">
+      Get Started
+    </button>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<div class="features">
+  <h2>Why Choose AppointEase?</h2>
+
+  <div class="feature-grid">
+    <div class="card">
+      <h3>Easy Booking</h3>
+      <p>Choose service, city, and place — book in seconds.</p>
+    </div>
+
+    <div class="card">
+      <h3>Real-Time Status</h3>
+      <p>Track your appointment from pending to approved.</p>
+    </div>
+
+    <div class="card">
+      <h3>Admin Approval</h3>
+      <p>Every booking is reviewed for authenticity.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<div class="categories">
+  <h2 style="text-align:center; margin-bottom:30px;">Available Services</h2>
+
+  <div class="cat-grid">
+    <div class="cat">🏥 Healthcare</div>
+    <div class="cat">💇 Salon</div>
+    <div class="cat">🏫 College Office</div>
+    <div class="cat">💼 Professional</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="steps">
+  <h2 style="text-align:center; margin-bottom:30px;">How It Works</h2>
+
+  <div class="steps-grid">
+    <div class="step">
+      <h3>Step 1</h3>
+      <p>Create your account.</p>
+    </div>
+
+    <div class="step">
+      <h3>Step 2</h3>
+      <p>Select category & service.</p>
+    </div>
+
+    <div class="step">
+      <h3>Step 3</h3>
+      <p>Enter city & place.</p>
+    </div>
+
+    <div class="step">
+      <h3>Step 4</h3>
+      <p>Get admin approval.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  © 2026 AppointEase | Smart Appointment System
+</div>
+
+</body>
+</html>

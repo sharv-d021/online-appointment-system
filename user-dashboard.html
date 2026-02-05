@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AppointEase — User Dashboard</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:#f3f4f6;
+    }
+
+    .layout{
+      display:flex;
+      min-height:100vh;
+    }
+
+    .sidebar{
+      width:230px;
+      background:#111827;
+      color:white;
+      padding:20px;
+    }
+
+    .sidebar h2{
+      margin-top:0;
+      color:#a5b4fc;
+    }
+
+    .sidebar button{
+      width:100%;
+      padding:10px;
+      margin:8px 0;
+      background:#1f2937;
+      color:white;
+      border:none;
+      text-align:left;
+      border-radius:6px;
+      cursor:pointer;
+    }
+
+    .sidebar button:hover{
+      background:#374151;
+    }
+
+    .content{
+      flex:1;
+      padding:20px 30px;
+    }
+
+    .top-bar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .cards{
+      display:flex;
+      gap:15px;
+      margin:20px 0;
+      flex-wrap:wrap;
+    }
+
+    .card{
+      background:white;
+      padding:18px;
+      border-radius:12px;
+      box-shadow:0 4px 10px rgba(0,0,0,.08);
+      min-width:180px;
+    }
+
+    .pending{ background:#fff3cd; }
+    .approved{ background:#d4edda; }
+
+    table{
+      width:100%;
+      background:white;
+      border-collapse:collapse;
+      border-radius:10px;
+      overflow:hidden;
+      box-shadow:0 4px 10px rgba(0,0,0,.08);
+    }
+
+    th, td{
+      padding:10px;
+      text-align:left;
+      border-bottom:1px solid #eee;
+    }
+
+    th{
+      background:#111827;
+      color:white;
+    }
+
+    .status{
+      padding:5px 10px;
+      border-radius:8px;
+      font-size:13px;
+    }
+
+    .status.pending{ background:#fff3cd; }
+    .status.approved{ background:#d4edda; }
+    .status.rejected{ background:#f8d7da; }
+
+    #emptyState{
+      margin:50px 0;
+      padding:20px;
+      background:white;
+      border-radius:12px;
+      box-shadow:0 4px 10px rgba(0,0,0,.08);
+      text-align:center;
+    }
+
+    .book{
+      margin-top:10px;
+      padding:10px 16px;
+      background:#4f46e5;
+      color:white;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <h2>AppointEase</h2>
+
+    <button>🏠 Dashboard</button>
+
+    <button onclick="window.location.href='appointment.html'">
+      📅 My Appointments
+    </button>
+
+    <button onclick="window.location.href='booking.html'">
+      ➕ Book Appointment
+    </button>
+
+    <button onclick="window.location.href='profile.html'">
+      👤 Profile
+    </button>
+
+    <button id="logoutBtn">🚪 Logout</button>
+  </aside>
+
+  <main class="content">
+
+    <div class="top-bar">
+      <h1>Welcome to AppointEase</h1>
+      <p id="userName"></p>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div id="emptyState">
+      <h3>No appointments yet</h3>
+      <p>Your bookings will appear here once you schedule one.</p>
+      <button class="book" onclick="window.location.href='booking.html'">
+        Book Appointment
+      </button>
+    </div>
+
+    <!-- REAL DASHBOARD -->
+    <div id="dashboardData" style="display:none;">
+
+      <div class="cards">
+        <div class="card">
+          <h3>Total Appointments</h3>
+          <h2 id="totalCount">0</h2>
+        </div>
+
+        <div class="card pending">
+          <h3>Pending</h3>
+          <h2 id="pendingCount">0</h2>
+        </div>
+
+        <div class="card approved">
+          <h3>Approved</h3>
+          <h2 id="approvedCount">0</h2>
+        </div>
+      </div>
+
+      <h3>Recent Appointments</h3>
+
+      <table>
+        <tr>
+          <th>Category</th>
+          <th>Service</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Status</th>
+        </tr>
+
+        <tbody id="appointmentRows"></tbody>
+      </table>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ---------------- SESSION CHECK ---------------- */
+if(!localStorage.getItem("activeSession")){
+  window.location.href = "auth/login.html";
+}
+
+/* ---------------- USER GREETING ---------------- */
+const savedUser = localStorage.getItem("user");
+
+if (savedUser) {
+  const user = JSON.parse(savedUser);
+  document.getElementById("userName").innerText = "Hi, " + user.name;
+}
+
+/* ---------------- LOGOUT WITH CONFIRM ---------------- */
+document.getElementById("logoutBtn").addEventListener("click", function(){
+
+  const confirmLogout = confirm(
+    "You will be logged out of AppointEase. Continue?"
+  );
+
+  if(confirmLogout){
+    localStorage.removeItem("activeSession"); // only session ends
+    localStorage.removeItem("user"); // optional: clear user data on logout for better security
+    window.location.href = "auth/login.html";
+  }
+});
+
+/* ---------------- LOAD DASHBOARD DATA ---------------- */
+function loadDashboard(){
+  const bookings = localStorage.getItem("bookings");
+  const emptyState = document.getElementById("emptyState");
+  const dashboardData = document.getElementById("dashboardData");
+  const tableBody = document.getElementById("appointmentRows");
+
+  tableBody.innerHTML = "";
+
+  if (!bookings) {
+    emptyState.style.display = "block";
+    dashboardData.style.display = "none";
+    return;
+  }
+
+  const list = JSON.parse(bookings);
+
+  if (list.length === 0) {
+    emptyState.style.display = "block";
+    dashboardData.style.display = "none";
+    return;
+  }
+
+  emptyState.style.display = "none";
+  dashboardData.style.display = "block";
+
+  document.getElementById("totalCount").innerText = list.length;
+
+  const pending = list.filter(b => b.status === "Pending").length;
+  const approved = list.filter(b => b.status === "Approved").length;
+
+  document.getElementById("pendingCount").innerText = pending;
+  document.getElementById("approvedCount").innerText = approved;
+
+  list.forEach(b => {
+    const row = `
+      <tr>
+        <td>${b.category || "—"}</td>
+        <td>${b.service}</td>
+        <td>${b.date}</td>
+        <td>${b.time}</td>
+        <td>
+          <span class="status ${b.status.toLowerCase()}">
+            ${b.status}
+          </span>
+        </td>
+      </tr>
+    `;
+    tableBody.innerHTML += row;
+  });
+}
+
+/* RUN ON PAGE LOAD */
+loadDashboard();
+</script>
+
+</body>
+</html>
