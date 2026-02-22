@@ -1,3 +1,5 @@
 const confirmLogout = confirm(
     "You will be logged out of AppointEase. Continue?"
   );
+
+

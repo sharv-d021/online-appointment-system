@@ -143,6 +143,14 @@ function goBack(){
 }
 
 function loadAppointments(){
+
+  const currentEmail = localStorage.getItem("currentUserEmail");
+
+  if(!currentEmail){
+    window.location.href = "auth/login.html";
+    return;
+  }
+
   const bookings = localStorage.getItem("bookings");
   const table = document.getElementById("table");
   const empty = document.getElementById("emptyState");
@@ -158,6 +166,9 @@ function loadAppointments(){
   }
 
   let list = JSON.parse(bookings);
+
+  // 🔥 VERY IMPORTANT: FILTER BY LOGGED IN USER
+  list = list.filter(b => b.userEmail === currentEmail);
 
   if(filter !== "all"){
     list = list.filter(b => b.status === filter);

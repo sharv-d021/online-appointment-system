@@ -204,10 +204,19 @@
 </div>
 
 <script>
-const savedUser = localStorage.getItem("user");
+function initProfile(){
 
-if(savedUser){
-  const user = JSON.parse(savedUser);
+  const currentEmail = localStorage.getItem("currentUserEmail");
+
+  if(!currentEmail){
+    window.location.href = "auth/login.html";
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const user = users.find(u => u.email === currentEmail);
+
+  if(!user) return;
 
   // ---- AUTO-FILL FROM SIGNUP ----
   document.getElementById("pName").value = user.name;
@@ -217,27 +226,29 @@ if(savedUser){
   document.getElementById("displayName").innerText = user.name;
   document.getElementById("displayEmail").innerText = user.email;
 
-  // Optional fields (if edited earlier)
   document.getElementById("pCity").value = user.city || "";
   document.getElementById("pBio").value = user.bio || "";
-}
 
-// Load appointment stats
-const bookings = localStorage.getItem("bookings");
+  // 🔥 Load appointment stats ONLY for this user
+  const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
 
-if(bookings){
-  const list = JSON.parse(bookings);
-  document.getElementById("totalStat").innerText = list.length;
+  const myBookings = bookings.filter(b => b.userEmail === currentEmail);
 
-  const pending = list.filter(b => b.status === "Pending").length;
+  document.getElementById("totalStat").innerText = myBookings.length;
+
+  const pending = myBookings.filter(b => b.status === "Pending").length;
   document.getElementById("pendingStat").innerText = pending;
 }
 
 function saveProfile(){
-  const name = document.getElementById("pName").value;
-  const phone = document.getElementById("pPhone").value;
-  const city = document.getElementById("pCity").value;
-  const bio = document.getElementById("pBio").value;
+
+  const currentEmail = localStorage.getItem("currentUserEmail");
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+  const name = document.getElementById("pName").value.trim();
+  const phone = document.getElementById("pPhone").value.trim();
+  const city = document.getElementById("pCity").value.trim();
+  const bio = document.getElementById("pBio").value.trim();
   const msg = document.getElementById("msg");
 
   if(!name || !phone){
@@ -246,19 +257,29 @@ function saveProfile(){
     return;
   }
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  if(!/^[0-9]{10}$/.test(phone)){
+    msg.style.color="red";
+    msg.innerText = "Phone must be exactly 10 digits.";
+    return;
+  }
 
-  const updatedUser = {
-    ...user,
-    name,
-    phone,
-    city,
-    bio
-  };
+  // 🔥 Update correct user inside users array
+  const updatedUsers = users.map(u=>{
+    if(u.email === currentEmail){
+      return {
+        ...u,
+        name,
+        phone,
+        city,
+        bio
+      };
+    }
+    return u;
+  });
 
-  localStorage.setItem("user", JSON.stringify(updatedUser));
+  localStorage.setItem("users", JSON.stringify(updatedUsers));
 
-  // Update left panel instantly
+  // Update display instantly
   document.getElementById("displayName").innerText = name;
 
   msg.style.color="green";
@@ -268,6 +289,8 @@ function saveProfile(){
 function goBack(){
   window.location.href = "user-dashboard.html";
 }
+
+initProfile();
 </script>
 
 </body>

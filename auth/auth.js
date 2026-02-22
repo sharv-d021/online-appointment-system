@@ -1,23 +1,58 @@
-// ---------- SIGNUP (ROLE DECIDED HERE) ----------
+/* =========================
+   AUTH SYSTEM (FIXED SESSION)
+   ========================= */
+
+function isValidEmail(email){
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return pattern.test(email);
+}
+
+function isValidPhone(phone){
+  const pattern = /^[0-9]{10}$/;
+  return pattern.test(phone);
+}
+
+/* ---------- SIGNUP ---------- */
 function signupUser(){
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const phone = document.getElementById("phone").value;
-  const password = document.getElementById("password").value;
+
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const password = document.getElementById("password").value.trim();
   const role = document.getElementById("signupRole").value;
+  const msg = document.getElementById("signupMsg");
+
+  msg.innerText="";
 
   if(!name || !email || !phone || !password){
-    alert("Fill all fields");
+    msg.style.color="red";
+    msg.innerText="Fill all fields.";
+    return;
+  }
+
+  if(!isValidEmail(email)){
+    msg.style.color="red";
+    msg.innerText="Invalid email format.";
+    return;
+  }
+
+  if(!isValidPhone(phone)){
+    msg.style.color="red";
+    msg.innerText="Phone must be exactly 10 digits.";
+    return;
+  }
+
+  if(password.length < 6){
+    msg.style.color="red";
+    msg.innerText="Password must be at least 6 characters.";
     return;
   }
 
   let users = JSON.parse(localStorage.getItem("users") || "[]");
 
-  const exists = users.find(u => u.email === email);
-
-  if(exists){
-    alert("You already have an account. Please login.");
-    window.location.href = "login.html";
+  if(users.find(u => u.email === email)){
+    msg.style.color="red";
+    msg.innerText="Account already exists.";
     return;
   }
 
@@ -26,64 +61,44 @@ function signupUser(){
   users.push(newUser);
   localStorage.setItem("users", JSON.stringify(users));
 
-  // create active session
-  localStorage.setItem("user", JSON.stringify(newUser));
+  // 🔥 SET SESSION EMAIL ONLY
+  localStorage.setItem("currentUserEmail", email);
   localStorage.setItem("activeSession", role);
 
-  window.location.href = "../user-dashboard.html";
+  setTimeout(()=>{
+    role === "admin"
+      ? window.location.href="../admin.html"
+      : window.location.href="../user-dashboard.html";
+  },500);
 }
 
-// ---------- LOGIN (CHECK FROM USERS LIST) ----------
+
+/* ---------- LOGIN ---------- */
 function loginUser(){
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
+
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
   const msg = document.getElementById("loginMsg");
 
-  if(!email || !password){
-    msg.style.color="red";
-    msg.innerText = "Enter email and password";
-    return;
-  }
+  msg.innerText="";
 
   const users = JSON.parse(localStorage.getItem("users") || "[]");
 
-  const found = users.find(
-    u => u.email === email && u.password === password
-  );
+  const user = users.find(u => u.email === email && u.password === password);
 
-  if(!found){
+  if(!user){
     msg.style.color="red";
-    msg.innerText = "Invalid email or password.";
+    msg.innerText="Invalid email or password.";
     return;
   }
 
-  // create session
-  localStorage.setItem("user", JSON.stringify(found));
-  localStorage.setItem("activeSession", found.role);
-
-  msg.style.color="green";
-  msg.innerText = "Login successful!";
+  // 🔥 FIXED SESSION LOGIC
+  localStorage.setItem("currentUserEmail", user.email);
+  localStorage.setItem("activeSession", user.role);
 
   setTimeout(()=>{
-    if(found.role === "admin"){
-      window.location.href="../admin.html";
-    } else {
-      window.location.href="../user-dashboard.html";
-    }
-  },1000);
-}
-
-// ---------- FORGOT PASSWORD (STATIC DEMO) ----------
-function resetPassword(){
-  const email = document.getElementById("resetEmail").value;
-  const msg = document.getElementById("resetMsg");
-
-  if(!email){
-    msg.style.color="red";
-    msg.innerText = "Enter your email first!";
-    return;
-  }
-
-  msg.style.color="green";
-  msg.innerText = "Reset link sent to your email (demo).";
+    user.role === "admin"
+      ? window.location.href="../admin.html"
+      : window.location.href="../user-dashboard.html";
+  },500);
 }

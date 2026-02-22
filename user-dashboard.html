@@ -6,8 +6,14 @@
   <style>
     body{
       margin:0;
-      font-family:Arial, sans-serif;
+      font-family:'Segoe UI', sans-serif;
       background:#f3f4f6;
+      transition:.3s;
+    }
+
+    body.dark-mode{
+      background:#0f172a;
+      color:white;
     }
 
     .layout{
@@ -16,7 +22,7 @@
     }
 
     .sidebar{
-      width:230px;
+      width:240px;
       background:#111827;
       color:white;
       padding:20px;
@@ -34,9 +40,9 @@
       background:#1f2937;
       color:white;
       border:none;
-      text-align:left;
       border-radius:6px;
       cursor:pointer;
+      text-align:left;
     }
 
     .sidebar button:hover{
@@ -45,7 +51,7 @@
 
     .content{
       flex:1;
-      padding:20px 30px;
+      padding:25px;
     }
 
     .top-bar{
@@ -54,236 +60,190 @@
       align-items:center;
     }
 
-    .cards{
-      display:flex;
-      gap:15px;
-      margin:20px 0;
-      flex-wrap:wrap;
+    .bell{
+      position:relative;
+      cursor:pointer;
+      font-size:20px;
+    }
+
+    .badge{
+      position:absolute;
+      top:-5px;
+      right:-8px;
+      background:red;
+      color:white;
+      border-radius:50%;
+      font-size:12px;
+      padding:2px 6px;
     }
 
     .card{
       background:white;
-      padding:18px;
+      padding:15px;
       border-radius:12px;
-      box-shadow:0 4px 10px rgba(0,0,0,.08);
-      min-width:180px;
-    }
-
-    .pending{ background:#fff3cd; }
-    .approved{ background:#d4edda; }
-
-    table{
-      width:100%;
-      background:white;
-      border-collapse:collapse;
-      border-radius:10px;
-      overflow:hidden;
+      margin-bottom:15px;
       box-shadow:0 4px 10px rgba(0,0,0,.08);
     }
 
-    th, td{
-      padding:10px;
-      text-align:left;
-      border-bottom:1px solid #eee;
-    }
-
-    th{
-      background:#111827;
-      color:white;
+    body.dark-mode .card{
+      background:#1e293b;
     }
 
     .status{
-      padding:5px 10px;
+      padding:4px 10px;
       border-radius:8px;
       font-size:13px;
     }
 
-    .status.pending{ background:#fff3cd; }
-    .status.approved{ background:#d4edda; }
-    .status.rejected{ background:#f8d7da; }
+    .Pending{background:#facc15;}
+    .Approved{background:#22c55e;color:white;}
+    .Rejected{background:#ef4444;color:white;}
 
-    #emptyState{
-      margin:50px 0;
-      padding:20px;
-      background:white;
-      border-radius:12px;
-      box-shadow:0 4px 10px rgba(0,0,0,.08);
-      text-align:center;
+    .timeline{
+      margin-top:8px;
+      font-size:13px;
+      opacity:.9;
     }
 
-    .book{
+    .cancel-btn{
       margin-top:10px;
-      padding:10px 16px;
-      background:#4f46e5;
+      background:#ef4444;
       color:white;
       border:none;
-      border-radius:8px;
+      padding:6px 12px;
+      border-radius:6px;
       cursor:pointer;
+    }
+
+    .dark-toggle{
+      cursor:pointer;
+      font-size:14px;
+    }
+
+    .notification-box{
+      position:absolute;
+      right:0;
+      top:35px;
+      width:260px;
+      background:white;
+      border-radius:8px;
+      box-shadow:0 6px 16px rgba(0,0,0,.2);
+      display:none;
+      z-index:10;
+    }
+
+    body.dark-mode .notification-box{
+      background:#1e293b;
+    }
+
+    .notification-item{
+      padding:10px;
+      border-bottom:1px solid #eee;
+      font-size:13px;
+    }
+
+    body.dark-mode .notification-item{
+      border-color:#334155;
     }
   </style>
 </head>
 
-<body>
+<body onload="initDashboard()">
 
 <div class="layout">
 
-  <aside class="sidebar">
-    <h2>AppointEase</h2>
+<aside class="sidebar">
+  <h2>AppointEase</h2>
 
-    <button>🏠 Dashboard</button>
+  <button onclick="location.reload()">🏠 Dashboard</button>
+  <button onclick="window.location.href='booking.html'">➕ Book</button>
+  <button onclick="window.location.href='appointment.html'">📅 My Appointments</button>
+  <button onclick="window.location.href='profile.html'">👤 Profile</button>
+  <button class="dark-toggle" onclick="toggleDarkMode()">🌙 Toggle</button>
+  <button onclick="logout()">🚪 Logout</button>
+</aside>
 
-    <button onclick="window.location.href='appointment.html'">
-      📅 My Appointments
-    </button>
+<main class="content">
 
-    <button onclick="window.location.href='booking.html'">
-      ➕ Book Appointment
-    </button>
+  <div class="top-bar">
+    <h2 id="welcomeText"></h2>
 
-    <button onclick="window.location.href='profile.html'">
-      👤 Profile
-    </button>
+    <div style="position:relative;">
+      <span class="bell" onclick="toggleNotifications()">🔔
+        <span class="badge" id="notifyCount">0</span>
+      </span>
 
-    <button id="logoutBtn">🚪 Logout</button>
-  </aside>
-
-  <main class="content">
-
-    <div class="top-bar">
-      <h1>Welcome to AppointEase</h1>
-      <p id="userName"></p>
+      <div class="notification-box" id="notifyBox"></div>
     </div>
+  </div>
 
-    <!-- EMPTY STATE -->
-    <div id="emptyState">
-      <h3>No appointments yet</h3>
-      <p>Your bookings will appear here once you schedule one.</p>
-      <button class="book" onclick="window.location.href='booking.html'">
-        Book Appointment
-      </button>
-    </div>
+  <div id="appointments"></div>
 
-    <!-- REAL DASHBOARD -->
-    <div id="dashboardData" style="display:none;">
-
-      <div class="cards">
-        <div class="card">
-          <h3>Total Appointments</h3>
-          <h2 id="totalCount">0</h2>
-        </div>
-
-        <div class="card pending">
-          <h3>Pending</h3>
-          <h2 id="pendingCount">0</h2>
-        </div>
-
-        <div class="card approved">
-          <h3>Approved</h3>
-          <h2 id="approvedCount">0</h2>
-        </div>
-      </div>
-
-      <h3>Recent Appointments</h3>
-
-      <table>
-        <tr>
-          <th>Category</th>
-          <th>Service</th>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Status</th>
-        </tr>
-
-        <tbody id="appointmentRows"></tbody>
-      </table>
-
-    </div>
-
-  </main>
+</main>
 </div>
 
+<script src="system.js"></script>
+
+<script src="system.js"></script>
+
 <script>
-/* ---------------- SESSION CHECK ---------------- */
-if(!localStorage.getItem("activeSession")){
-  window.location.href = "auth/login.html";
-}
+function initDashboard(){
 
-/* ---------------- USER GREETING ---------------- */
-const savedUser = localStorage.getItem("user");
+  loadDarkMode();
 
-if (savedUser) {
-  const user = JSON.parse(savedUser);
-  document.getElementById("userName").innerText = "Hi, " + user.name;
-}
+  const currentEmail = localStorage.getItem("currentUserEmail");
 
-/* ---------------- LOGOUT WITH CONFIRM ---------------- */
-document.getElementById("logoutBtn").addEventListener("click", function(){
-
-  const confirmLogout = confirm(
-    "You will be logged out of AppointEase. Continue?"
-  );
-
-  if(confirmLogout){
-    localStorage.removeItem("activeSession"); // only session ends
-    localStorage.removeItem("user"); // optional: clear user data on logout for better security
-    window.location.href = "auth/login.html";
-  }
-});
-
-/* ---------------- LOAD DASHBOARD DATA ---------------- */
-function loadDashboard(){
-  const bookings = localStorage.getItem("bookings");
-  const emptyState = document.getElementById("emptyState");
-  const dashboardData = document.getElementById("dashboardData");
-  const tableBody = document.getElementById("appointmentRows");
-
-  tableBody.innerHTML = "";
-
-  if (!bookings) {
-    emptyState.style.display = "block";
-    dashboardData.style.display = "none";
+  if(!currentEmail){
+    window.location.href="auth/login.html";
     return;
   }
 
-  const list = JSON.parse(bookings);
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const user = users.find(u => u.email === currentEmail);
 
-  if (list.length === 0) {
-    emptyState.style.display = "block";
-    dashboardData.style.display = "none";
+  if(!user){
+    window.location.href="auth/login.html";
     return;
   }
 
-  emptyState.style.display = "none";
-  dashboardData.style.display = "block";
+  // Correct welcome name
+  document.getElementById("welcomeText").innerText =
+    "Welcome, " + user.name;
 
-  document.getElementById("totalCount").innerText = list.length;
+  const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
 
-  const pending = list.filter(b => b.status === "Pending").length;
-  const approved = list.filter(b => b.status === "Approved").length;
+  // 🔥 FILTER ONLY CURRENT USER BOOKINGS
+  const myBookings = bookings.filter(b => b.userEmail === currentEmail);
 
-  document.getElementById("pendingCount").innerText = pending;
-  document.getElementById("approvedCount").innerText = approved;
+  const container = document.getElementById("appointments");
+  container.innerHTML = "";
 
-  list.forEach(b => {
-    const row = `
-      <tr>
-        <td>${b.category || "—"}</td>
-        <td>${b.service}</td>
-        <td>${b.date}</td>
-        <td>${b.time}</td>
-        <td>
-          <span class="status ${b.status.toLowerCase()}">
-            ${b.status}
-          </span>
-        </td>
-      </tr>
+  if(!myBookings.length){
+    container.innerHTML = "<p>No appointments yet.</p>";
+    return;
+  }
+
+  myBookings.forEach(b=>{
+    container.innerHTML += `
+      <div class="card">
+        <strong>ID:</strong> ${b.appointmentID || "-"}<br>
+        ${b.category || "-"} - ${b.service || "-"}<br>
+        ${b.date || "-"} | ${b.time || "-"}<br>
+        <span class="status ${b.status}">${b.status}</span>
+
+        <div class="timeline">
+          Timeline: ${(b.timeline || []).join(" → ")}
+        </div>
+      </div>
     `;
-    tableBody.innerHTML += row;
   });
 }
 
-/* RUN ON PAGE LOAD */
-loadDashboard();
+function logout(){
+  localStorage.removeItem("currentUserEmail");
+  localStorage.removeItem("activeSession");
+  window.location.href="auth/login.html";
+}
 </script>
 
 </body>
