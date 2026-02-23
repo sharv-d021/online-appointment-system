@@ -328,7 +328,7 @@ function bookAppointment(){
     return;
   }
 
-const currentEmail = localStorage.getItem("currentUserEmail");
+const currentEmail = sessionStorage.getItem("currentUserEmail");
 
 if(!currentEmail){
   window.location.href = "auth/login.html";

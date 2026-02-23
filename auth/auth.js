@@ -1,5 +1,5 @@
 /* =========================
-   AUTH SYSTEM (FIXED SESSION)
+   AUTH SYSTEM (SESSION FIXED)
    ========================= */
 
 function isValidEmail(email){
@@ -61,9 +61,9 @@ function signupUser(){
   users.push(newUser);
   localStorage.setItem("users", JSON.stringify(users));
 
-  // 🔥 SET SESSION EMAIL ONLY
-  localStorage.setItem("currentUserEmail", email);
-  localStorage.setItem("activeSession", role);
+  // ✅ SESSION STORED PER TAB
+  sessionStorage.setItem("currentUserEmail", email);
+  sessionStorage.setItem("activeSession", role);
 
   setTimeout(()=>{
     role === "admin"
@@ -71,7 +71,6 @@ function signupUser(){
       : window.location.href="../user-dashboard.html";
   },500);
 }
-
 
 /* ---------- LOGIN ---------- */
 function loginUser(){
@@ -92,9 +91,9 @@ function loginUser(){
     return;
   }
 
-  // 🔥 FIXED SESSION LOGIC
-  localStorage.setItem("currentUserEmail", user.email);
-  localStorage.setItem("activeSession", user.role);
+  // ✅ SESSION PER TAB
+  sessionStorage.setItem("currentUserEmail", user.email);
+  sessionStorage.setItem("activeSession", user.role);
 
   setTimeout(()=>{
     user.role === "admin"

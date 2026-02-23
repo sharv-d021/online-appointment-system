@@ -254,8 +254,8 @@ addNotification(b.userEmail, "Your appointment " + id + " was " + newStatus + ".
 }
 
 function logout(){
-  localStorage.removeItem("activeSession");
-  localStorage.removeItem("currentUserEmail");
+  sessionStorage.removeItem("currentUserEmail");
+  sessionStorage.removeItem("activeSession");
   window.location.href="auth/login.html";
 }
 </script>

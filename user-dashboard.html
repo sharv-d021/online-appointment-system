@@ -169,8 +169,7 @@
     <h2 id="welcomeText"></h2>
 
     <div style="position:relative;">
-      <span class="bell" onclick="toggleNotifications()">🔔
-        <span class="badge" id="notifyCount">0</span>
+      
       </span>
 
       <div class="notification-box" id="notifyBox"></div>
@@ -187,12 +186,11 @@
 <script src="system.js"></script>
 
 <script>
-
 function initDashboard(){
 
   loadDarkMode();
 
-  const currentEmail = localStorage.getItem("currentUserEmail");
+  const currentEmail = sessionStorage.getItem("currentUserEmail");
 
   if(!currentEmail){
     window.location.href="auth/login.html";
@@ -207,13 +205,10 @@ function initDashboard(){
     return;
   }
 
-  // Correct welcome name
   document.getElementById("welcomeText").innerText =
     "Welcome, " + user.name;
 
   const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
-
-  // 🔥 FILTER ONLY CURRENT USER BOOKINGS
   const myBookings = bookings.filter(b => b.userEmail === currentEmail);
 
   const container = document.getElementById("appointments");
@@ -238,12 +233,13 @@ function initDashboard(){
       </div>
     `;
   });
+
   updateNotificationUI();
 }
 
 function updateNotificationUI(){
 
-  const currentEmail = localStorage.getItem("currentUserEmail");
+  const currentEmail = sessionStorage.getItem("currentUserEmail");
   const badge = document.getElementById("notifyCount");
   const box = document.getElementById("notifyBox");
 
@@ -265,7 +261,7 @@ function updateNotificationUI(){
 
 function toggleNotifications(){
   const box = document.getElementById("notifyBox");
-  const currentEmail = localStorage.getItem("currentUserEmail");
+  const currentEmail = sessionStorage.getItem("currentUserEmail");
 
   box.style.display = box.style.display === "block" ? "none" : "block";
 
@@ -276,14 +272,9 @@ function toggleNotifications(){
 }
 
 function logout(){
-  localStorage.removeItem("currentUserEmail");
-  localStorage.removeItem("activeSession");
+  sessionStorage.removeItem("currentUserEmail");
+  sessionStorage.removeItem("activeSession");
   window.location.href="auth/login.html";
-
-  window.addEventListener("storage", function(){
-  initDashboard();
-  updateNotificationUI();
-});
 }
 </script>
 

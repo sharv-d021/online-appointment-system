@@ -242,8 +242,8 @@ function initProfile(){
 
 function saveProfile(){
 
-  const currentEmail = localStorage.getItem("currentUserEmail");
-  const users = JSON.parse(localStorage.getItem("users") || "[]");
+const currentEmail = sessionStorage.getItem("currentUserEmail");
+const users = JSON.parse(localStorage.getItem("users") || "[]");
 
   const name = document.getElementById("pName").value.trim();
   const phone = document.getElementById("pPhone").value.trim();
