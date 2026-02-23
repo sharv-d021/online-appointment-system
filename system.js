@@ -25,10 +25,16 @@ function isSlotBooked(category, place, date, time){
 
 
 /* ---------- NOTIFICATION SYSTEM ---------- */
-function addNotification(message){
-  let notifications = JSON.parse(localStorage.getItem("notifications") || "[]");
 
-  notifications.push({
+function addNotification(email, message){
+
+  let notifications = JSON.parse(localStorage.getItem("notifications") || "{}");
+
+  if(!notifications[email]){
+    notifications[email] = [];
+  }
+
+  notifications[email].push({
     message,
     time: new Date().toLocaleString(),
     read:false
@@ -37,14 +43,23 @@ function addNotification(message){
   localStorage.setItem("notifications", JSON.stringify(notifications));
 }
 
-function getUnreadCount(){
-  const notifications = JSON.parse(localStorage.getItem("notifications") || "[]");
-  return notifications.filter(n => !n.read).length;
+function getUserNotifications(email){
+  const notifications = JSON.parse(localStorage.getItem("notifications") || "{}");
+  return notifications[email] || [];
 }
 
-function markNotificationsRead(){
-  let notifications = JSON.parse(localStorage.getItem("notifications") || "[]");
-  notifications = notifications.map(n => ({...n, read:true}));
+function getUnreadCount(email){
+  const list = getUserNotifications(email);
+  return list.filter(n => !n.read).length;
+}
+
+function markNotificationsRead(email){
+  let notifications = JSON.parse(localStorage.getItem("notifications") || "{}");
+
+  if(notifications[email]){
+    notifications[email] = notifications[email].map(n => ({...n, read:true}));
+  }
+
   localStorage.setItem("notifications", JSON.stringify(notifications));
 }
 

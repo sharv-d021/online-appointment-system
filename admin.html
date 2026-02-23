@@ -243,8 +243,8 @@ function updateStatus(id,newStatus){
 
       b.timeline.push(newStatus);
 
-      addNotification("Appointment " + id + " has been " + newStatus + ".");
-    }
+addNotification(b.userEmail, "Your appointment " + id + " was " + newStatus + ".");   
+ }
 
     return b;
   });

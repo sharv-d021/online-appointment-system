@@ -187,6 +187,7 @@
 <script src="system.js"></script>
 
 <script>
+
 function initDashboard(){
 
   loadDarkMode();
@@ -237,12 +238,52 @@ function initDashboard(){
       </div>
     `;
   });
+  updateNotificationUI();
+}
+
+function updateNotificationUI(){
+
+  const currentEmail = localStorage.getItem("currentUserEmail");
+  const badge = document.getElementById("notifyCount");
+  const box = document.getElementById("notifyBox");
+
+  const list = getUserNotifications(currentEmail);
+
+  badge.innerText = getUnreadCount(currentEmail);
+
+  box.innerHTML = "";
+
+  list.slice().reverse().forEach(n=>{
+    box.innerHTML += `
+      <div class="notification-item">
+        ${n.message}<br>
+        <small>${n.time}</small>
+      </div>
+    `;
+  });
+}
+
+function toggleNotifications(){
+  const box = document.getElementById("notifyBox");
+  const currentEmail = localStorage.getItem("currentUserEmail");
+
+  box.style.display = box.style.display === "block" ? "none" : "block";
+
+  if(box.style.display === "block"){
+    markNotificationsRead(currentEmail);
+    updateNotificationUI();
+  }
 }
 
 function logout(){
   localStorage.removeItem("currentUserEmail");
   localStorage.removeItem("activeSession");
   window.location.href="auth/login.html";
+
+  window.addEventListener("storage", function(){
+  initDashboard();
+  updateNotificationUI();
+});
 }
 </script>
 
