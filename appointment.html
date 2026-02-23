@@ -144,7 +144,7 @@ function goBack(){
 
 function loadAppointments(){
 
-  const currentEmail = localStorage.getItem("currentUserEmail");
+  const currentEmail = sessionStorage.getItem("currentUserEmail");
 
   if(!currentEmail){
     window.location.href = "auth/login.html";
